@@ -1,7 +1,14 @@
+!------------------------------------------------------------------------------
+!               Global Modeling and Assimilation Office (GMAO)                !
+!                    Goddard Earth Observing System (GEOS)                    !
+!                                 MAPL Component                              !
+!------------------------------------------------------------------------------
+!
 #include "MAPL_Exceptions.h"
 #include "MAPL_ErrLog.h"
 #include "unused_dummy.H"
-!=============================================================================
+!
+
 !FPP macros for repeated (type-dependent) code
 
 #ifdef IO_SUCCESS
@@ -126,15 +133,16 @@ type is(T) ;\
 !END FPP macros for repeated (type-dependent) code
 !=============================================================================
 
+!------------------------------------------------------------------------------
+!>
+!### MODULE: `MAPL_ResourceMod`
+!
+! Author: GMAO SI-Team
+!
+! The module `MAPL_ResourceMod` provides subroutines get scalar and array
+! resources from ESMF_Config objects.
+!
 module MAPL_ResourceMod
-
-   !BOP
-   ! !MODULE: MAPL_ResourceMod
-   !
-   ! !DESCRIPTION:  MAPL\_ResourceMod provides subroutines get scalar and array
-   ! resources from ESMF_Config objects.
-
-   ! !USES:
 
    use ESMF
    use ESMFL_Mod
@@ -145,7 +153,6 @@ module MAPL_ResourceMod
    use MAPL_KeywordEnforcerMod
    use, intrinsic :: iso_fortran_env, only: REAL32, REAL64, int32, int64
 
-   ! !PUBLIC MEMBER FUNCTIONS:
    implicit none
    private
 
@@ -160,8 +167,8 @@ module MAPL_ResourceMod
    character(len=*), parameter :: FMT_REAL64 = '(f0.6)'
    character(len=*), parameter :: FMT_LOGICAL= '(l1)'
 
-   character(len=*), parameter :: TYPE_INT32 = "'Integer*4 '" 
-   character(len=*), parameter :: TYPE_INT64 = "'Integer*8 '" 
+   character(len=*), parameter :: TYPE_INT32 = "'Integer*4 '"
+   character(len=*), parameter :: TYPE_INT64 = "'Integer*8 '"
    character(len=*), parameter :: TYPE_REAL32 = "'Real*4 '"
    character(len=*), parameter :: TYPE_REAL64 = "'Real*8 '"
    character(len=*), parameter :: TYPE_LOGICAL =  "'Logical '"
@@ -190,12 +197,12 @@ contains
 
       integer, parameter :: PRINT_ALL = 1
       integer, parameter :: PRINT_DIFFERENT = 0
-      
+
       integer :: printrc
       integer :: status
 
       if (MAPL_AM_I_Root()) then
-         call ESMF_ConfigGetAttribute(config, printrc, label = 'PRINTRC:', default = 0, _RC)  
+         call ESMF_ConfigGetAttribute(config, printrc, label = 'PRINTRC:', default = 0, _RC)
          do_print = (printrc == PRINT_ALL) .or. (printrc == PRINT_DIFFERENT)
          print_nondefault_only = (printrc == PRINT_DIFFERENT) .and. default_is_present
       else
@@ -246,12 +253,15 @@ contains
 
    end subroutine set_do_print
 
-   ! MAPL searches for labels with certain prefixes as well as just the label itself
+!--------------------------------------------------------------------------------
+!>
+! MAPL searches for labels with certain prefixes as well as just the label itself.
+!
    pure function get_labels_with_prefix(label, component_name) result(labels_with_prefix)
-      character(len=*), intent(in) :: label
+      character(len=*),           intent(in) :: label
       character(len=*), optional, intent(in) :: component_name
-      character(len=ESMF_MAXSTR) :: component_type
-      character(len=ESMF_MAXSTR) :: labels_with_prefix(4)
+      character(len=ESMF_MAXSTR)             :: component_type
+      character(len=ESMF_MAXSTR)             :: labels_with_prefix(4)
 
       if(present(component_name)) then
          component_type = component_name(index(component_name, ":") + 1:)
@@ -268,15 +278,19 @@ contains
 
    end function get_labels_with_prefix
 
-   ! If possible, find label or label with prefix. Out: label found (logical)  ! version of label found,
+!--------------------------------------------------------------------------------
+!>
+! If possible, find label or label with prefix.
+! Out: label found (logical) - version of label found
+!
    subroutine get_actual_label(config, label, label_is_present, actual_label, unusable, component_name, rc)
-      type(ESMF_Config), intent(inout) :: config
-      character(len=*), intent(in) :: label
-      logical, intent(out) :: label_is_present
-      character(len=:), allocatable, intent(out) :: actual_label
-      class(KeywordEnforcer), optional, intent(in) :: unusable
-      character(len=*), optional, intent(in) :: component_name
-      integer, optional, intent(out) :: rc
+      type(ESMF_Config),                intent(inout) :: config
+      character(len=*),                 intent(in)    :: label
+      logical,                          intent(out)   :: label_is_present
+      character(len=:), allocatable,    intent(out)   :: actual_label
+      class(KeywordEnforcer), optional, intent(in)    :: unusable
+      character(len=*),       optional, intent(in)    :: component_name
+      integer,                optional, intent(out)   :: rc
 
       character(len=ESMF_MAXSTR), allocatable :: labels_to_try(:)
       integer :: i
@@ -303,16 +317,19 @@ contains
       _RETURN(_SUCCESS)
    end subroutine get_actual_label
 
-   ! Find value of scalar variable in config
+!--------------------------------------------------------------------------------
+!>
+! Find value of scalar variable in config.
+!
    subroutine MAPL_GetResource_config_scalar(config, val, label, value_is_set, unusable, default, component_name, rc)
-      type(ESMF_Config), intent(inout) :: config
-      class(*), intent(inout) :: val
-      character(len=*), intent(in) :: label
-      logical, intent(out) :: value_is_set
-      class(KeywordEnforcer), optional, intent(in) :: unusable
-      class(*), optional, intent(in) :: default
-      character(len=*), optional, intent(in) :: component_name
-      integer, optional, intent(out) :: rc
+      type(ESMF_Config),                intent(inout) :: config
+      class(*),                         intent(inout) :: val
+      character(len=*),                 intent(in)    :: label
+      logical,                          intent(out)   :: value_is_set
+      class(KeywordEnforcer), optional, intent(in)    :: unusable
+      class(*),               optional, intent(in)    :: default
+      character(len=*),       optional, intent(in)    :: component_name
+      integer,                optional, intent(out)   :: rc
 
       character(len=:), allocatable :: actual_label
       character(len=:), allocatable :: type_format
@@ -332,13 +349,13 @@ contains
 
       default_is_present = present(default)
 
-      ! these need to be initialized explitictly 
+      ! these need to be initialized explitictly
       value_is_set = .FALSE.
       label_is_present = .FALSE.
       print_nondefault_only = .FALSE.
       do_print = .FALSE.
       value_is_default = .FALSE.
-      
+
       if (default_is_present) then
          _ASSERT(same_type_as(val, default), "Value and default must have same type")
       end if
@@ -352,7 +369,7 @@ contains
       end if
 
       call get_print_settings(config, default_is_present, do_print, print_nondefault_only, _RC)
-   
+
       select type(val)
 
       SET_VALUE(integer(int32), val)
@@ -382,31 +399,31 @@ contains
 
       SET_VALUE(character(len=*), val)
       ! character value can't use the MAKE_STRINGS macro (formatted differently)
-      if (do_print) then 
-         if (label_is_present) then 
-            if(default_is_present) then 
-               select type(default) 
-               type is(character(len=*)) 
-                  value_is_default = (trim(val) == trim(default)) 
-               class default 
-                  _FAIL(MISMATCH_MESSAGE) 
-               end select 
-            else 
-               value_is_default = .FALSE. 
-            end if 
-         end if 
-         if (.not. (print_nondefault_only .and. value_is_default)) then 
+      if (do_print) then
+         if (label_is_present) then
+            if(default_is_present) then
+               select type(default)
+               type is(character(len=*))
+                  value_is_default = (trim(val) == trim(default))
+               class default
+                  _FAIL(MISMATCH_MESSAGE)
+               end select
+            else
+               value_is_default = .FALSE.
+            end if
+         end if
+         if (.not. (print_nondefault_only .and. value_is_default)) then
             type_string = TYPE_CHARACTER
-            formatted_value = trim(val) 
-         else 
-            do_print = .FALSE. 
-         end if 
+            formatted_value = trim(val)
+         else
+            do_print = .FALSE.
+         end if
       end if
-      
+
       class default
          _FAIL( "Unsupported type")
       end select
-      
+
       if(do_print) call print_resource(type_string, actual_label, formatted_value, value_is_default, _RC)
 
       value_is_set = .TRUE.
@@ -415,18 +432,19 @@ contains
 
    end subroutine MAPL_GetResource_config_scalar
 
-   ! Find value of array variable in config
+!--------------------------------------------------------------------------------
+!>
+! Find value of array variable in config.
+!
    subroutine MAPL_GetResource_config_array(config, vals, label, value_is_set, unusable, default, component_name, rc)
-      type(ESMF_Config), intent(inout) :: config
-      class(*), intent(inout) :: vals(:)
-      character(len=*), intent(in) :: label
-      logical, intent(out) :: value_is_set
-      class(KeywordEnforcer), optional, intent(in) :: unusable
-      class(*), optional, intent(in) :: default(:)
-      character(len=*), optional, intent(in) :: component_name
-      integer, optional, intent(out) :: rc
-      character(len=2) :: array_size_string
-      ! We assume we'll never have more than 99 values, hence len=2
+      type(ESMF_Config),                intent(inout) :: config
+      class(*),                         intent(inout) :: vals(:)
+      character(len=*),                 intent(in)    :: label
+      logical,                          intent(out)   :: value_is_set
+      class(KeywordEnforcer), optional, intent(in)    :: unusable
+      class(*),               optional, intent(in)    :: default(:)
+      character(len=*),       optional, intent(in)    :: component_name
+      integer,                optional, intent(out)   :: rc
 
       character(len=:), allocatable :: actual_label
       character(len=:), allocatable :: type_format
@@ -447,7 +465,7 @@ contains
 
       default_is_present = present(default)
 
-      ! these need to be initialized explitictly 
+      ! these need to be initialized explitictly
       value_is_set = .FALSE.
       label_is_present = .FALSE.
       print_nondefault_only = .FALSE.
@@ -500,28 +518,28 @@ contains
 
       SET_ARRAY_VALUE(character(len=*), vals)
       if (do_print) then
-         if (label_is_present) then 
-            if(default_is_present) then 
-               select type(default) 
-               type is(character(len=*)) 
-                  value_is_default = compare_all(vals, default) 
-               class default 
-                  _FAIL(MISMATCH_MESSAGE) 
-               end select 
-            else 
-               value_is_default = .FALSE. 
-            end if 
-         end if 
-         if (.not. (print_nondefault_only .and. value_is_default)) then 
+         if (label_is_present) then
+            if(default_is_present) then
+               select type(default)
+               type is(character(len=*))
+                  value_is_default = compare_all(vals, default)
+               class default
+                  _FAIL(MISMATCH_MESSAGE)
+               end select
+            else
+               value_is_default = .FALSE.
+            end if
+         end if
+         if (.not. (print_nondefault_only .and. value_is_default)) then
             type_string = TYPE_CHARACTER
             write(array_size_string, '(i2)', iostat=io_stat) size(vals)
             _ASSERT((io_stat == IO_SUCCESS), 'Failure writing array size string: ' // trim(actual_label))
             type_format = string_array_format(array_size_string)
             write(formatted_value, type_format, iostat=io_stat) vals
             _ASSERT((io_stat == IO_SUCCESS), 'Failure writing array formatted_value: ' // trim(actual_label))
-         else 
-            do_print = .FALSE. 
-         end if 
+         else
+            do_print = .FALSE.
+         end if
       end if
 
       class default
@@ -536,13 +554,18 @@ contains
 
    end subroutine MAPL_GetResource_config_array
 
-   ! Print the resource value
-   subroutine print_resource(type_string, label, formatted_value, value_is_default, rc)
-      character(len=*), intent(in) :: type_string
-      character(len=*), intent(in) :: label
-      character(len=*), intent(in) :: formatted_value
-      logical, intent(in) :: value_is_default
-      integer, optional, intent(out) :: rc
+!--------------------------------------------------------------------------------
+!>
+! Print the resource value according to the value of printrc:
+!- `printrc = 0` - Only print non-default values
+!- `printrc = 1` - Print all values
+!
+   subroutine print_resource(printrc, label, val, default, rc)
+      integer,                    intent(in)  :: printrc
+      character(len=*),           intent(in)  :: label
+      class(*),                   intent(in)  :: val
+      class(*),         optional, intent(in)  :: default
+      integer,          optional, intent(out) :: rc
 
       character(len=*), parameter :: DEFAULT_ = ", (default value)"
       character(len=*), parameter :: NONDEFAULT_ = ''
@@ -583,7 +606,7 @@ contains
       string_array_format = '('//N//'(""a"",1X))'
 
    end function string_array_format
-   
+
    ! Compare all the strings in two string arrays
    pure function compare_all(astrings, bstrings)
       character(len=*), dimension(:), intent(in) :: astrings
@@ -598,7 +621,7 @@ contains
          if(.not. compare_all) exit
          compare_all = (trim(astrings(i)) == trim(bstrings(i)))
       end do
-         
+
    end function compare_all
 
    ! Test if two logicals are equivalent
@@ -611,11 +634,41 @@ contains
    end function are_equivalent
 
    ! These are specific functions for the are_equal generic function.
-   ! Basically wrapper functions for the == binary relational operator 
+   ! Basically wrapper functions for the == binary relational operator
    pure elemental function are_equal_int32 ARE_EQUAL_FUNCTION(integer(int32)) ; end function are_equal_int32
    pure elemental function are_equal_int64 ARE_EQUAL_FUNCTION(integer(int64)) ; end function are_equal_int64
    pure elemental function are_equal_real32 ARE_EQUAL_FUNCTION(real(real32)) ; end function are_equal_real32
    pure elemental function are_equal_real64 ARE_EQUAL_FUNCTION(real(real64)) ; end function are_equal_real64
    pure elemental function are_equal_character ARE_EQUAL_FUNCTION(character(len=*)) ; end function are_equal_character
+!--------------------------------------------------------------------------------
+!>
+! Convert val to string according to str_format.
+!
+   function intrinsic_to_string(val, str_format, rc) result(formatted_str)
+      class(*),          intent(in)  :: val
+      character(len=*),  intent(in)  :: str_format
+      character(len=256)             :: formatted_str
+      integer, optional, intent(out) :: rc
+
+      select type(val)
+      type is(integer(int32))
+         write(formatted_str, str_format) val
+      type is(integer(int64))
+         write(formatted_str, str_format) val
+      type is(real(real32))
+         write(formatted_str, str_format) val
+      type is(real(real64))
+         write(formatted_str, str_format) val
+      type is(logical)
+         write(formatted_str, str_format) val
+      type is(character(len=*))
+         formatted_str = trim(val)
+         class default
+         _FAIL( "Unsupported type in intrinsic_to_string")
+      end select
+
+      _RETURN(_SUCCESS)
+
+   end function intrinsic_to_string
 
 end module MAPL_ResourceMod
