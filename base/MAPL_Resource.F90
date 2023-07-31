@@ -1,14 +1,7 @@
-!------------------------------------------------------------------------------
-!               Global Modeling and Assimilation Office (GMAO)                !
-!                    Goddard Earth Observing System (GEOS)                    !
-!                                 MAPL Component                              !
-!------------------------------------------------------------------------------
-!
 #include "MAPL_Exceptions.h"
 #include "MAPL_ErrLog.h"
 #include "unused_dummy.H"
-!
-
+!=============================================================================
 !FPP macros for repeated (type-dependent) code
 
 #ifdef IO_SUCCESS
@@ -132,6 +125,7 @@ type is(T) ;\
 !=============================================================================
 !END FPP macros for repeated (type-dependent) code
 !=============================================================================
+<<<<<<< HEAD
 
 !------------------------------------------------------------------------------
 !>
@@ -140,9 +134,19 @@ type is(T) ;\
 ! Author: GMAO SI-Team
 !
 ! The module `MAPL_ResourceMod` provides subroutines get scalar and array
+=======
+!>
+!### Module `MAPL_ResourceMod`
+!
+! Author: GMAO SI-Team
+!
+! `MAPL_ResourceMod` provides subroutines get scalar and array
+>>>>>>> upstream/main
 ! resources from ESMF_Config objects.
 !
 module MAPL_ResourceMod
+
+   ! !USES:
 
    use ESMF
    use ESMFL_Mod
@@ -153,6 +157,10 @@ module MAPL_ResourceMod
    use MAPL_KeywordEnforcerMod
    use, intrinsic :: iso_fortran_env, only: REAL32, REAL64, int32, int64
 
+<<<<<<< HEAD
+=======
+   ! !PUBLIC MEMBER FUNCTIONS:
+>>>>>>> upstream/main
    implicit none
    private
 
@@ -185,6 +193,7 @@ module MAPL_ResourceMod
 
 contains
 
+   !>
    ! Set do_print & print_nondefault_only based on config and if default is present
    ! Print only (do_print) only if printrc is 0 or 1
    ! Print only nondefault values if printrc == 0 and if default is present
@@ -211,6 +220,7 @@ contains
 
    end subroutine get_print_settings
 
+   !>
    ! Check if vector contains string
    logical function vector_contains_str(vector, string)
       type(StringVector), intent(in) :: vector
@@ -231,6 +241,7 @@ contains
 
    end function vector_contains_str
 
+   !>
    ! Check if resource has already been printed (vector contains label) or should be printed
    subroutine set_do_print(label, do_print)
       character(*), intent(in) :: label
@@ -253,15 +264,20 @@ contains
 
    end subroutine set_do_print
 
+<<<<<<< HEAD
 !--------------------------------------------------------------------------------
 !>
 ! MAPL searches for labels with certain prefixes as well as just the label itself.
 !
+=======
+   !>
+   ! MAPL searches for labels with certain prefixes as well as just the label itself
+>>>>>>> upstream/main
    pure function get_labels_with_prefix(label, component_name) result(labels_with_prefix)
-      character(len=*),           intent(in) :: label
+      character(len=*), intent(in) :: label
       character(len=*), optional, intent(in) :: component_name
-      character(len=ESMF_MAXSTR)             :: component_type
-      character(len=ESMF_MAXSTR)             :: labels_with_prefix(4)
+      character(len=ESMF_MAXSTR) :: component_type
+      character(len=ESMF_MAXSTR) :: labels_with_prefix(4)
 
       if(present(component_name)) then
          component_type = component_name(index(component_name, ":") + 1:)
@@ -278,19 +294,24 @@ contains
 
    end function get_labels_with_prefix
 
+<<<<<<< HEAD
 !--------------------------------------------------------------------------------
 !>
 ! If possible, find label or label with prefix.
 ! Out: label found (logical) - version of label found
 !
+=======
+   !>
+   ! If possible, find label or label with prefix. Out: label found (logical)  ! version of label found,
+>>>>>>> upstream/main
    subroutine get_actual_label(config, label, label_is_present, actual_label, unusable, component_name, rc)
-      type(ESMF_Config),                intent(inout) :: config
-      character(len=*),                 intent(in)    :: label
-      logical,                          intent(out)   :: label_is_present
-      character(len=:), allocatable,    intent(out)   :: actual_label
-      class(KeywordEnforcer), optional, intent(in)    :: unusable
-      character(len=*),       optional, intent(in)    :: component_name
-      integer,                optional, intent(out)   :: rc
+      type(ESMF_Config), intent(inout) :: config
+      character(len=*), intent(in) :: label
+      logical, intent(out) :: label_is_present
+      character(len=:), allocatable, intent(out) :: actual_label
+      class(KeywordEnforcer), optional, intent(in) :: unusable
+      character(len=*), optional, intent(in) :: component_name
+      integer, optional, intent(out) :: rc
 
       character(len=ESMF_MAXSTR), allocatable :: labels_to_try(:)
       integer :: i
@@ -317,11 +338,10 @@ contains
       _RETURN(_SUCCESS)
    end subroutine get_actual_label
 
-!--------------------------------------------------------------------------------
-!>
-! Find value of scalar variable in config.
-!
+   !>
+   ! Find value of scalar variable in config
    subroutine MAPL_GetResource_config_scalar(config, val, label, value_is_set, unusable, default, component_name, rc)
+<<<<<<< HEAD
       type(ESMF_Config),                intent(inout) :: config
       class(*),                         intent(inout) :: val
       character(len=*),                 intent(in)    :: label
@@ -330,6 +350,16 @@ contains
       class(*),               optional, intent(in)    :: default
       character(len=*),       optional, intent(in)    :: component_name
       integer,                optional, intent(out)   :: rc
+=======
+      type(ESMF_Config), intent(inout) :: config
+      class(*), intent(inout) :: val
+      character(len=*), intent(in) :: label
+      logical, intent(out) :: value_is_set
+      class(KeywordEnforcer), optional, intent(in) :: unusable
+      class(*), optional, intent(in) :: default
+      character(len=*), optional, intent(in) :: component_name
+      integer, optional, intent(out) :: rc
+>>>>>>> upstream/main
 
       character(len=:), allocatable :: actual_label
       character(len=:), allocatable :: type_format
@@ -432,11 +462,10 @@ contains
 
    end subroutine MAPL_GetResource_config_scalar
 
-!--------------------------------------------------------------------------------
-!>
-! Find value of array variable in config.
-!
+   !>
+   ! Find value of array variable in config
    subroutine MAPL_GetResource_config_array(config, vals, label, value_is_set, unusable, default, component_name, rc)
+<<<<<<< HEAD
       type(ESMF_Config),                intent(inout) :: config
       class(*),                         intent(inout) :: vals(:)
       character(len=*),                 intent(in)    :: label
@@ -445,6 +474,18 @@ contains
       class(*),               optional, intent(in)    :: default(:)
       character(len=*),       optional, intent(in)    :: component_name
       integer,                optional, intent(out)   :: rc
+=======
+      type(ESMF_Config), intent(inout) :: config
+      class(*), intent(inout) :: vals(:)
+      character(len=*), intent(in) :: label
+      logical, intent(out) :: value_is_set
+      class(KeywordEnforcer), optional, intent(in) :: unusable
+      class(*), optional, intent(in) :: default(:)
+      character(len=*), optional, intent(in) :: component_name
+      integer, optional, intent(out) :: rc
+      character(len=2) :: array_size_string
+      ! We assume we'll never have more than 99 values, hence len=2
+>>>>>>> upstream/main
 
       character(len=:), allocatable :: actual_label
       character(len=:), allocatable :: type_format
@@ -503,12 +544,12 @@ contains
 
       SET_ARRAY_VALUE(real(real32), vals)
       if (do_print) then
-         MAKE_ARRAY_STRINGS(real(int32), vals,  TYPE_REAL32, FMT_REAL32)
+         MAKE_ARRAY_STRINGS(real(real32), vals,  TYPE_REAL32, FMT_REAL32)
       end if
 
       SET_ARRAY_VALUE(real(real64), vals)
       if (do_print) then
-         MAKE_ARRAY_STRINGS(real(int64), vals,  TYPE_REAL64, FMT_REAL64)
+         MAKE_ARRAY_STRINGS(real(real64), vals,  TYPE_REAL64, FMT_REAL64)
       end if
 
       SET_ARRAY_VALUE(logical, vals)
@@ -554,6 +595,7 @@ contains
 
    end subroutine MAPL_GetResource_config_array
 
+<<<<<<< HEAD
 !--------------------------------------------------------------------------------
 !>
 ! Print the resource value according to the value of printrc:
@@ -566,6 +608,17 @@ contains
       class(*),                   intent(in)  :: val
       class(*),         optional, intent(in)  :: default
       integer,          optional, intent(out) :: rc
+=======
+
+   !>
+   ! Print the resource value
+   subroutine print_resource(type_string, label, formatted_value, value_is_default, rc)
+      character(len=*), intent(in) :: type_string
+      character(len=*), intent(in) :: label
+      character(len=*), intent(in) :: formatted_value
+      logical, intent(in) :: value_is_default
+      integer, optional, intent(out) :: rc
+>>>>>>> upstream/main
 
       character(len=*), parameter :: DEFAULT_ = ", (default value)"
       character(len=*), parameter :: NONDEFAULT_ = ''
@@ -585,6 +638,7 @@ contains
 
    end subroutine print_resource
 
+   !>
    ! Create array format string from scalar format string
    pure function array_format(scalar_format, array_size_string)
       character(len=*), intent(in) :: scalar_format
@@ -595,6 +649,7 @@ contains
 
    end function array_format
 
+   !>
    ! Create format string for array of strings
    pure function string_array_format(array_size_string)
       character(len=*), intent(in) :: array_size_string
@@ -606,7 +661,12 @@ contains
       string_array_format = '('//N//'(""a"",1X))'
 
    end function string_array_format
+<<<<<<< HEAD
 
+=======
+
+   !>
+>>>>>>> upstream/main
    ! Compare all the strings in two string arrays
    pure function compare_all(astrings, bstrings)
       character(len=*), dimension(:), intent(in) :: astrings
@@ -624,6 +684,7 @@ contains
 
    end function compare_all
 
+   !>
    ! Test if two logicals are equivalent
    ! Basically a wrapper function for use in are_equal generic function
    pure elemental function are_equivalent(a, b) result(res)
@@ -634,12 +695,17 @@ contains
    end function are_equivalent
 
    ! These are specific functions for the are_equal generic function.
+<<<<<<< HEAD
    ! Basically wrapper functions for the == binary relational operator
+=======
+   ! Basically wrapper functions for the == binary relational operator
+>>>>>>> upstream/main
    pure elemental function are_equal_int32 ARE_EQUAL_FUNCTION(integer(int32)) ; end function are_equal_int32
    pure elemental function are_equal_int64 ARE_EQUAL_FUNCTION(integer(int64)) ; end function are_equal_int64
    pure elemental function are_equal_real32 ARE_EQUAL_FUNCTION(real(real32)) ; end function are_equal_real32
    pure elemental function are_equal_real64 ARE_EQUAL_FUNCTION(real(real64)) ; end function are_equal_real64
    pure elemental function are_equal_character ARE_EQUAL_FUNCTION(character(len=*)) ; end function are_equal_character
+<<<<<<< HEAD
 !--------------------------------------------------------------------------------
 !>
 ! Convert val to string according to str_format.
@@ -670,5 +736,7 @@ contains
       _RETURN(_SUCCESS)
 
    end function intrinsic_to_string
+=======
+>>>>>>> upstream/main
 
 end module MAPL_ResourceMod

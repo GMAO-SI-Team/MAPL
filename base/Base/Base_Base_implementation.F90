@@ -24,6 +24,7 @@ submodule (MAPL_Base) Base_Implementation
   ! !USES:
   !
   use ESMF
+  use MAPL_Geom
   use MAPL_Constants
   use MAPL_RangeMod
   use MAPL_SphericalGeometry
@@ -2644,60 +2645,6 @@ contains
   end subroutine MAPL_FieldAttSetI4
   ! ========================================
 
-  module subroutine MAPL_FieldDestroy(Field,RC)
-    type(ESMF_Field),          intent(INOUT) :: Field
-    integer, optional,         intent(OUT  ) :: RC
-
-    character(len=ESMF_MAXSTR), parameter :: IAm="MAPL_FieldDestroy"
-    integer                               :: STATUS
-
-    real(kind=ESMF_KIND_R4), pointer      :: VAR_1D(:), VAR_2D(:,:), VAR_3D(:,:,:)
-    real(kind=ESMF_KIND_R8), pointer      :: VR8_1D(:), VR8_2D(:,:), VR8_3D(:,:,:) 
-    integer                      :: rank
-    type(ESMF_TypeKind_Flag)     :: tk
-
-    call ESMF_FieldGet(Field,typekind=tk,dimCount=rank,rc=status)
-    _VERIFY(STATUS)
-    if (tk == ESMF_TYPEKIND_R4 .and. rank == 1) then
-       call ESMF_FieldGet(Field,0,VAR_1d,rc=status)
-       _VERIFY(STATUS)
-       deallocate(Var_1d,stat=status)
-       _VERIFY(STATUS)
-    else if (tk == ESMF_TYPEKIND_R8 .and. rank == 1) then
-       call ESMF_FieldGet(Field,0,VR8_1d,rc=status)
-       _VERIFY(STATUS)
-       deallocate(VR8_1d,stat=status)
-       _VERIFY(STATUS)
-    else if (tk == ESMF_TYPEKIND_R4 .and. rank == 2) then
-       call ESMF_FieldGet(Field,0,VAR_2d,rc=status)
-       _VERIFY(STATUS)
-       deallocate(Var_2d,stat=status)
-       _VERIFY(STATUS)
-    else if (tk == ESMF_TYPEKIND_R8 .and. rank == 2) then
-       call ESMF_FieldGet(Field,0,VR8_2d,rc=status)
-       _VERIFY(STATUS)
-       deallocate(VR8_2d,stat=status)
-       _VERIFY(STATUS)
-    else if (tk == ESMF_TYPEKIND_R4 .and. rank == 3) then
-       call ESMF_FieldGet(Field,0,VAR_3D,rc=status)
-       _VERIFY(STATUS)
-       deallocate(Var_3d,stat=status)
-       _VERIFY(STATUS)
-    else if (tk == ESMF_TYPEKIND_R8 .and. rank == 3) then
-       call ESMF_FieldGet(Field,0,VR8_3D,rc=status)
-       _VERIFY(STATUS)
-       deallocate(VR8_3d,stat=status)
-       _VERIFY(STATUS)
-    else
-       _FAIL( 'unsupported typekind+rank')
-    end if
-    call ESMF_FieldDestroy(Field,rc=status)
-    _VERIFY(STATUS)
-
-    _RETURN(ESMF_SUCCESS)
-
-  end subroutine MAPL_FieldDestroy
-
   module subroutine MAPL_FieldBundleDestroy(Bundle,RC)
     type(ESMF_FieldBundle),    intent(INOUT) :: Bundle
     integer, optional,         intent(OUT  ) :: RC
@@ -3307,17 +3254,16 @@ contains
        call MAPL_GridGetInterior(grid,I1,I2,J1,J2)
        OK = .true. 
        ! check the edge of face 1 along longitude
+       allocate(corner_lons(I2-I1+2, J2-J1+2))
+       allocate(corner_lats(I2-I1+2, J2-J1+2))
+       call MAPL_GridGetCorners(Grid,corner_lons,corner_lats)
        if ( I1 ==1 .and. J2<=IM_WORLD ) then
-          allocate(corner_lons(I2-I1+2, J2-J1+2))
-          allocate(corner_lats(I2-I1+2, J2-J1+2))
-          call MAPL_GridGetCorners(Grid,corner_lons,corner_lats)
           if (J1 == 1) then
             accurate_lon = 1.750d0*MAPL_PI_R8 - shift
             if (abs(accurate_lon - corner_lons(1,1)) > tolerance) then
                print*, "accurate_lon: ", accurate_lon
                print*, "corner_lon  : ", corner_lons(1,1)
                print*, "Error: Grid should have pi/18 shift"
-               deallocate(corner_lons, corner_lats)
                OK = .false.
                return
             endif
@@ -3333,10 +3279,9 @@ contains
                 print*, "  1)Grid is NOT gnomonic_ed;"
                 print*, "  2)lats lons from MAPL_GridGetCorners are NOT accurate (single precision from ESMF)"
                 OK = .false.
-                exit
+                return
              endif
           enddo
-          deallocate(corner_lons, corner_lats)
        endif
     end function
 
@@ -3910,7 +3855,6 @@ contains
       deallocate(tmp)
       ! if the user did no supply enough separated alias field names,
       ! append 00i to the original field name
-      if (n==1) nn=0
       do i=nn+1,n
          write(splitNameArray(i),'(A,I3.3)') trim(name), i
       end do

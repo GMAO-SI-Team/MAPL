@@ -1166,12 +1166,14 @@ contains
       basic_metadata=formatter%read(_RC)
       call metadata%create(basic_metadata,trim(filename))
       lev_name = metadata%get_level_name(_RC)
-      call metadata%get_coordinate_info(lev_name,coords=levs,coordUnits=lev_units,long_name=long_name,&
-            standard_name=standard_name,coordinate_attr=vcoord,_RC)
-      plevs => levs
-      vertical_data = VerticalData(levels=plevs,vunit=lev_units,vcoord=vcoord,standard_name=standard_name,long_name=long_name, &
-            force_no_regrid=.true.,_RC)
-      nullify(plevs)
+      if (lev_name /= '') then
+         call metadata%get_coordinate_info(lev_name,coords=levs,coordUnits=lev_units,long_name=long_name,&
+               standard_name=standard_name,coordinate_attr=vcoord,_RC)
+         plevs => levs
+         vertical_data = VerticalData(levels=plevs,vunit=lev_units,vcoord=vcoord,standard_name=standard_name,long_name=long_name, &
+               force_no_regrid=.true.,_RC)
+         nullify(plevs)
+      end if
 
       if (present(rc)) then
          rc=_SUCCESS
@@ -1185,7 +1187,7 @@ contains
       integer, intent(out), optional :: rc
       integer :: status, global_dims(3)
       call MAPL_GridGet(grid,globalCellCountPerDim=global_dims,_RC)
-      grid_has_level = (global_dims(3)/=1)
+      grid_has_level = (global_dims(3)>1)
       if (present(rc)) then
          RC=_SUCCESS
       end if
@@ -1528,8 +1530,9 @@ contains
    end subroutine get_esmf_grid_layout
 
    subroutine check_quad ( quad,vname,nvars,aliases,nalias,qloc )
+      integer :: nvars, nalias
       character(len=ESMF_MAXSTR)  quad(2), aliases(2,nalias), vname(nvars)
-      integer  nvars, nalias, qloc(2)
+      integer  qloc(2)
       integer  m,n
 
 ! Initialize Location of Quadratics
@@ -1632,9 +1635,7 @@ contains
 
       integer ndpm(12)
       data    ndpm /31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31/
-      logical leap
       integer :: ny,nm,nd
-      leap(ny) = mod(ny,4).eq.0 .and. (mod(ny,100).ne.0 .or. mod(ny,400).eq.0)
 !***********************************************************************
 !
       ny = nymd / 10000
@@ -1648,10 +1649,10 @@ contains
             ny = ny - 1
          endif
          nd = ndpm(nm)
-         if (nm.eq.2 .and. leap(ny))  nd = 29
+         if (nm.eq.2 .and. is_leap_year(ny))  nd = 29
       endif
 
-      if (nd.eq.29 .and. nm.eq.2 .and. leap(ny))  go to 20
+      if (nd.eq.29 .and. nm.eq.2 .and. is_leap_year(ny))  go to 20
 
       if (nd.gt.ndpm(nm)) then
          nd = 1
@@ -1667,6 +1668,11 @@ contains
       return
 
    end function compute_incymd
+
+   logical function is_leap_year(year)
+      integer, intent(in) :: year
+      is_leap_year = (mod(year,4) == 0) .and. (mod(year,100) == 0 .or. mod(year,400) == 0)
+   end function is_leap_year
 
    subroutine usage(root)
       logical, intent(in) :: root
