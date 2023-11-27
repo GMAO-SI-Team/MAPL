@@ -1,7 +1,8 @@
 ---
+preprocessor: cpp -traditional-cpp -E
 src_dir: ../../
-search: true
-graph: true
+search: false
+graph: false
 coloured_edges: true
 graph_maxdepth: 4
 graph_maxnodes: 32
